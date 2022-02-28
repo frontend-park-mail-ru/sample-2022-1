@@ -1,3 +1,5 @@
+import {MenuComponent, RENDER_TYPE} from './components/Menu/Menu.js';
+import {safe} from './utils/safe.js';
 
 const root = document.getElementById('root');
 
@@ -23,29 +25,11 @@ const configApp = {
 	},
 	about: {
 		href: '/about',
-		text: 'Контакты',
+		text: safe('<iframe src="https://example.com" onload="alert(1);"></iframe>')
 	}
 };
 
-function ajax(method, url, body = null, callback) {
-	const xhr = new XMLHttpRequest();
-	xhr.open(method, url, true);
-	xhr.withCredentials = true;
-
-	xhr.addEventListener('readystatechange', function() {
-		if (xhr.readyState !== XMLHttpRequest.DONE) return;
-
-		callback(xhr.status, xhr.responseText);
-	});
-
-	if (body) {
-		xhr.setRequestHeader('Content-type', 'application/json; charset=utf8');
-		xhr.send(JSON.stringify(body));
-		return;
-	}
-
-	xhr.send();
-}
+const menuItems = Object.entries(configApp).map(([key, {href, text}]) => ({key, href, text}));
 
 function createInput(type, text, name) {
 	const input = document.createElement('input');
@@ -57,29 +41,9 @@ function createInput(type, text, name) {
 }
 
 function menuPage() {
-	root.innerHTML = '';
-
-	Object
-		.entries(configApp)
-		.map(([key, {href, text}]) => {
-			if (!text) {
-				return ;
-			}
-			const menuElement = document.createElement('a');
-			menuElement.href = href;
-			menuElement.textContent = text;
-			menuElement.dataset.section = key;
-
-			return menuElement;
-		})
-		.forEach((element) => {
-			if (!element) {
-				return;
-			}
-			root.appendChild(element);
-		})
-	;
-
+	const menu = new MenuComponent(root);
+	menu.items = menuItems;
+	menu.render(RENDER_TYPE.STRING);
 }
 
 function signupPage() {
@@ -138,11 +102,14 @@ function loginPage() {
 		const email = emailInput.value.trim();
 		const password = passwordInput.value;
 
-		ajax(
-			'POST',
-			'/login',
-			{email, password},
-			(status => {
+
+		Ajax.post({
+			url: '/login',
+			body: {
+				email,
+				password
+			},
+			callback: (status => {
 				if (status === 200) {
 					profilePage();
 					return;
@@ -151,7 +118,7 @@ function loginPage() {
 				alert('АХТУНГ! НЕТ АВТОРИЗАЦИИ');
 				signupPage();
 			})
-		)
+		});
 	});
 
 
@@ -162,11 +129,9 @@ function loginPage() {
 function profilePage() {
 	root.innerHTML = '';
 
-	ajax(
-		'GET',
-		'/me',
-		null,
-		(status, responseText) => {
+	Ajax.get({
+		url: '/me',
+		callback: (status, responseText) => {
 			let isAuthorized = false;
 			if (status === 200) {
 				isAuthorized = true;
@@ -203,7 +168,7 @@ function profilePage() {
 			alert('АХТУНГ, НЕТ АВТОРИЗАЦИИ');
 			loginPage();
 		}
-	)
+	});
 }
 
 menuPage();
