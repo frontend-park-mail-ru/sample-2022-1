@@ -1,0 +1,10 @@
+.menu__element {
+    font-weight: bold;
+    font-family: sans-serif;
+    padding: 4px 2px;
+    background-color: var(--bg-color);
+}
+
+.menu__element:hover {
+    background-color: lightcyan;
+}

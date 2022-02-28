@@ -1,0 +1,17 @@
+<fest:template xmlns:fest="http://fest.mail.ru" context_name="items">
+    <fest:for iterate="items" index="i" value="item">
+        <fest:if test="item.text !== undefined">
+            <a class="menu__element">
+                <fest:attributes>
+                    <fest:attribute name="href">
+                        <fest:value>item.href</fest:value>
+                    </fest:attribute>
+                    <fest:attribute name="data-section">
+                        <fest:value>item.key</fest:value>
+                    </fest:attribute>
+                </fest:attributes>
+                <fest:value>item.text</fest:value>
+            </a>
+        </fest:if>
+    </fest:for>
+</fest:template>
