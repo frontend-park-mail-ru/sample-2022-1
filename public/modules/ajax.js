@@ -47,6 +47,67 @@
 
             xhr.send();
         }
+
+        promisifyGet(params = {}) {
+            return new Promise((resolve, reject) => {
+                this._ajax({
+                    ...params,
+                    method: AJAX_METHODS.GET,
+                    callback: (status, responseText) => {
+                        // 1xx, 2xx
+                        if (status < 300) {
+                            resolve({
+                                status,
+                                responseText
+                            });
+                            return;
+                        }
+
+                        reject({
+                            status,
+                            responseText
+                        })
+                    }
+                })
+            })
+        }
+
+        getUsingFetch(params = {}) {
+            let status;
+
+            return fetch(params.url, {
+                method: AJAX_METHODS.GET
+            })
+            .then((response) => {
+                status = response.status;
+                return response.json()
+            })
+            .then(parsedBody => {
+                return {
+                    status,
+                    responseText: parsedBody
+                }
+            });
+        }
+
+        async asyncGetUsingFetch(params = {}) {
+            
+            const response = await fetch(params.url, {
+                method: AJAX_METHODS.GET
+            });
+
+            try {
+                const parsedBody = await response.json();
+            } catch (err) {
+                alert('я не смогу превратить ответ в json')
+            }
+            
+
+            return {
+                status: response.status,
+                responseText: parsedBody
+            };
+        }
     }
 
     window.Ajax = new Ajax();
